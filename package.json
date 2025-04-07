@@ -1,0 +1,23 @@
+{
+  "name": "pipeline-testes-cypress",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "cypress:run": "cypress run",
+    "merge-reports": "mochawesome-merge cypress/reports/*.json > cypress/reports/mochawesome.json || true",
+    "generate-report": "marge cypress/reports/mochawesome.json -f report -o cypress/reports || true",
+    "posttest": "npm run merge-reports && npm run generate-report",
+    "test:full": "npm run cypress:run && npm run posttest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "cypress": "^14.2.1",
+    "cypress-mochawesome-reporter": "^3.8.2",
+    "http-server": "^14.1.1",
+    "mochawesome-merge": "^5.0.0",
+    "mochawesome-report-generator": "^6.2.0"
+  }
+}

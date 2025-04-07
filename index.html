@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Arquivos Customizados</title>
+    <style>
+        :root {
+            --background: #fafafa;
+            --foreground: #171717;
+            --card: #ffffff;
+            --card-foreground: #171717;
+            --primary: #0f172a;
+            --primary-foreground: #f8fafc;
+            --secondary: #f1f5f9;
+            --secondary-foreground: #0f172a;
+            --muted: #f1f5f9;
+            --muted-foreground: #64748b;
+            --accent: #f1f5f9;
+            --accent-foreground: #0f172a;
+            --destructive: #ef4444;
+            --destructive-foreground: #f8fafc;
+            --border: #e2e8f0;
+            --input: #e2e8f0;
+            --ring: #0f172a;
+            --radius: 0.5rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--foreground);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--foreground);
+        }
+
+        .card {
+            background-color: var(--card);
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--foreground);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--input);
+            background-color: transparent;
+            color: var(--foreground);
+            font-size: 0.875rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--ring);
+            box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.1);
+        }
+
+        .input-with-unit {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .input-with-unit select {
+            width: 5rem;
+        }
+
+        button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            height: 2.5rem;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-primary:hover {
+            background-color: #1e293b;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+
+        .extensions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .extension-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--input);
+            appearance: none;
+            position: relative;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"]:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '';
+            width: 0.25rem;
+            height: 0.5rem;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            position: absolute;
+        }
+
+        input[type="checkbox"]:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.1);
+        }
+
+        .select-all-container {
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .select-all-container label {
+            margin-bottom: 0;
+        }
+
+        .progress-container {
+            margin-top: 1.5rem;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 0.5rem;
+            background-color: var(--secondary);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 0.875rem;
+            color: var(--muted-foreground);
+        }
+
+        .download-list {
+            margin-top: 1.5rem;
+            display: none;
+        }
+
+        .download-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background-color: var(--secondary);
+            border-radius: var(--radius);
+            margin-bottom: 0.5rem;
+        }
+
+        .download-link {
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius);
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .download-link:hover {
+            background-color: #1e293b;
+        }
+
+        .error-message {
+            font-size: 0.875rem;
+            color: var(--destructive);
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        @media (max-width: 640px) {
+            .extensions-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Gerador de Arquivos Customizados</h1>
+    
+    <div class="card">
+        <div class="form-group">
+            <label for="filename">Nome do Arquivo (sem extensão).</label>
+            <input type="text" id="filename" placeholder="exemplo">
+        </div>
+        
+        <div class="form-group">
+            <label for="filesize">Tamanho do Arquivo</label>
+            <div class="input-with-unit">
+                <input type="number" id="filesize" min="1" placeholder="Tamanho">
+                <select id="sizeUnit">
+                    <option value="KB">KB</option>
+                    <option value="MB" selected>MB</option>
+                    <option value="GB">GB</option>
+                </select>
+            </div>
+            <div class="error-message" id="size-error">O tamanho máximo para geração em navegador é de aproximadamente 2GB.</div>
+        </div>
+        
+        <div class="form-group">
+            <label>Extensões de Arquivo.</label>
+            
+            <div class="select-all-container">
+                <input type="checkbox" id="selectAll">
+                <label for="selectAll">Selecionar Todas</label>
+            </div>
+            
+            <div class="extensions-grid" id="extensionsGrid">
+                <!-- As extensões serão adicionadas via JavaScript -->
+            </div>
+        </div>
+        
+        <button id="generateBtn" class="btn-primary">Gerar Arquivos</button>
+        
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+            <div class="progress-text" id="progressText">Gerando arquivos.... 0%</div>
+        </div>
+    </div>
+    
+    <div class="download-list" id="downloadList">
+        <h3>Arquivos Gerados</h3>
+        <div id="filesList"></div>
+        <button class="btn-primary" id="downloadZip" style="width: 100%; margin-top: 1rem;">Baixar Todos (ZIP)</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        // Lista de extensões disponíveis
+        const availableExtensions = [
+            'doc', 'docx', 'docm', 'xls', 'xlsx', 'xlsm', 'ppt', 'odt', 'rtf', 'pdf', 
+            'xml', 'bmp', 'jpg', 'jpeg', 'png', 'gif', 'csv', 'txt', 're', 'svg', 
+            'ekp', 'pfx', 'zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz', 'z', 'tgz', 
+            'tbz2', 'tlz', 'lzma', 'cab', 'iso', 'dmg', 'lz', 'wim', 'apk', 'xpi', 
+            'deb', 'rpm', 'cpio'
+        ];
+        
+        // Adicionar extensões dinamicamente
+        const extensionsGrid = document.getElementById('extensionsGrid');
+        
+        availableExtensions.forEach(ext => {
+            const extensionItem = document.createElement('div');
+            extensionItem.className = 'extension-item';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = ext;
+            checkbox.className = 'ext-checkbox';
+            
+            const label = document.createElement('label');
+            label.htmlFor = ext;
+            label.textContent = `.${ext}`;
+            
+            extensionItem.appendChild(checkbox);
+            extensionItem.appendChild(label);
+            extensionsGrid.appendChild(extensionItem);
+        });
+        
+        // Seleção de elementos do DOM
+        const filenameInput = document.getElementById('filename');
+        const filesizeInput = document.getElementById('filesize');
+        const sizeUnitSelect = document.getElementById('sizeUnit');
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const extCheckboxes = document.querySelectorAll('.ext-checkbox');
+        const generateBtn = document.getElementById('generateBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const downloadList = document.getElementById('downloadList');
+        const filesList = document.getElementById('filesList');
+        const downloadZipBtn = document.getElementById('downloadZip');
+        const sizeError = document.getElementById('size-error');
+        
+        // Evento para "selecionar todas" as extensões
+        selectAllCheckbox.addEventListener('change', function() {
+            extCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+        
+        // Verificar se alguma extensão está selecionada
+        extCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const allChecked = Array.from(extCheckboxes).every(cb => cb.checked);
+                const anyChecked = Array.from(extCheckboxes).some(cb => cb.checked);
+                
+                selectAllCheckbox.checked = allChecked;
+                selectAllCheckbox.indeterminate = anyChecked && !allChecked;
+            });
+        });
+        
+        // Verificar tamanho máximo
+        filesizeInput.addEventListener('input', function() {
+            const size = parseFloat(this.value) || 0;
+            const unit = sizeUnitSelect.value;
+            
+            let sizeInMB = size;
+            if (unit === 'KB') sizeInMB = size / 1024;
+            if (unit === 'GB') sizeInMB = size * 1024;
+            
+            // Alerta se for maior que 2GB (aproximadamente o limite máximo prático)
+            if (sizeInMB > 2048) {
+                sizeError.style.display = 'block';
+            } else {
+                sizeError.style.display = 'none';
+            }
+        });
+        
+        sizeUnitSelect.addEventListener('change', function() {
+            // Revalidar quando a unidade mudar
+            const event = new Event('input');
+            filesizeInput.dispatchEvent(event);
+        });
+        
+        // Função para gerar o conteúdo dos arquivos (dados aleatórios)
+        function generateRandomContent(sizeInBytes) {
+            // Criar um buffer de tamanho especificado
+            const buffer = new ArrayBuffer(sizeInBytes);
+            const view = new Uint8Array(buffer);
+            
+            // Preencher com dados aleatórios
+            for (let i = 0; i < sizeInBytes; i++) {
+                view[i] = Math.floor(Math.random() * 256);
+            }
+            
+            return buffer;
+        }
+        
+        // Função para converter tamanho para bytes
+        function convertToBytes(size, unit) {
+            switch(unit) {
+                case 'KB': return size * 1024;
+                case 'MB': return size * 1024 * 1024;
+                case 'GB': return size * 1024 * 1024 * 1024;
+                default: return size;
+            }
+        }
+        
+        // Geração de arquivos
+        generateBtn.addEventListener('click', async function() {
+            const filename = filenameInput.value.trim() || 'arquivo';
+            const filesize = parseFloat(filesizeInput.value);
+            const sizeUnit = sizeUnitSelect.value;
+            
+            if (!filesize || filesize <= 0) {
+                alert('Por favor, especifique um tamanho válido para o arquivo.');
+                return;
+            }
+            
+            const selectedExtensions = Array.from(extCheckboxes)
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.id);
+                
+            if (selectedExtensions.length === 0) {
+                alert('Por favor, selecione pelo menos uma extensão de arquivo.');
+                return;
+            }
+            
+            // Iniciar a geração dos arquivos
+            generateBtn.disabled = true;
+            progressContainer.style.display = 'block';
+            downloadList.style.display = 'none';
+            filesList.innerHTML = '';
+            
+            const sizeInBytes = convertToBytes(filesize, sizeUnit);
+            const generatedFiles = [];
+            const zip = new JSZip();
+            
+            // Gerar cada arquivo
+            for (let i = 0; i < selectedExtensions.length; i++) {
+                const extension = selectedExtensions[i];
+                const currentFileName = `${filename}.${extension}`;
+                
+                // Atualizar progresso
+                const progress = Math.round(((i + 0.5) / selectedExtensions.length) * 100);
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `Gerando ${currentFileName}... ${progress}%`;
+                
+                // Permitir atualizações da UI
+                await new Promise(resolve => setTimeout(resolve, 50));
+                
+                // Gerar o conteúdo do arquivo
+                const content = generateRandomContent(sizeInBytes);
+                
+                // Adicionar ao ZIP
+                zip.file(currentFileName, content);
+                
+                // Criar um objeto URL para download direto
+                const blob = new Blob([content], { type: 'application/octet-stream' });
+                const url = URL.createObjectURL(blob);
+                
+                generatedFiles.push({
+                    name: currentFileName,
+                    url: url,
+                    size: sizeInBytes
+                });
+            }
+            
+            // Finalizar progresso
+            progressBar.style.width = '100%';
+            progressText.textContent = 'Arquivos gerados com sucesso!';
+            
+            // Exibir lista de downloads
+            downloadList.style.display = 'block';
+            
+            // Popular a lista de arquivos
+            generatedFiles.forEach(file => {
+                const fileSize = formatFileSize(file.size);
+                
+                const item = document.createElement('div');
+                item.className = 'download-item';
+                item.innerHTML = `
+                    <span>${file.name} (${fileSize})</span>
+                    <a href="${file.url}" download="${file.name}" class="download-link">Baixar</a>
+                `;
+                
+                filesList.appendChild(item);
+            });
+            
+            // Habilitar o botão de download ZIP
+            downloadZipBtn.addEventListener('click', async function() {
+                this.disabled = true;
+                this.textContent = 'Preparando ZIP...';
+                
+                // Permitir atualização da UI
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Gerar o arquivo ZIP
+                try {
+                    const zipBlob = await zip.generateAsync({ type: 'blob' });
+                    const zipUrl = URL.createObjectURL(zipBlob);
+                    
+                    // Criar link e simular clique
+                    const link = document.createElement('a');
+                    link.href = zipUrl;
+                    link.download = `${filename}_files.zip`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    this.textContent = 'Download concluído!';
+                    
+                    // Restaurar o botão após um momento
+                    setTimeout(() => {
+                        this.textContent = 'Baixar Todos (ZIP)';
+                        this.disabled = false;
+                    }, 3000);
+                } catch (error) {
+                    console.error("Erro ao gerar ZIP:", error);
+                    alert("Não foi possível criar o arquivo ZIP. Por favor, faça o download dos arquivos individualmente.");
+                    this.textContent = 'Baixar Todos (ZIP)';
+                    this.disabled = false;
+                }
+            });
+            
+            // Reativar o botão de geração
+            generateBtn.disabled = false;
+        });
+        
+        // Função para formatar o tamanho do arquivo
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+            else if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+            else return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+        }
+    </script>
+</body>
+</html>
