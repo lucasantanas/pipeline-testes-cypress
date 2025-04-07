@@ -1,0 +1,78 @@
+name: Testes e Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configurar AWS Credentials...
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+  
+      - name: Instalando Node.js...
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+          cache: 'npm'
+  
+      - name: Instalando dependências...
+        run: npm ci
+  
+      - name: Iniciando servidor local...
+        run: |
+          npx http-server . -p 8080 &
+          sleep 5
+  
+      - name: Executando testes...
+        run: npm run test:full
+        continue-on-error: true
+  
+      - name: Upload dos relatórios para o S3...
+        run: |
+          aws s3 cp cypress/reports/ s3://relatorioscypress/GithubActions/ --recursive
+
+  deploy:
+    needs: testes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Configurar AWS Credentials...
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy para o Amplify...
+        run: |
+          APP_ID="d2oemzn8l0ony7"
+          BRANCH="main"
+          
+          JOB_INFO=$(aws amplify start-job --app-id $APP_ID --branch-name $BRANCH --job-type RELEASE)
+          JOB_ID=$(echo $JOB_INFO | jq -r '.jobSummary.jobId')
+          
+          while true; do
+            STATUS=$(aws amplify get-job --app-id $APP_ID --branch-name $BRANCH --job-id $JOB_ID | jq -r '.job.summary.status')
+            
+            if [ "$STATUS" == "SUCCEED" ]; then
+              echo "Deploy concluído."
+              break
+            elif [ "$STATUS" == "FAILED" ]; then
+              echo "Deploy falhou."
+              exit 1
+            else
+              echo "Deploy status: $STATUS"
+              sleep 30
+            fi
+          done
