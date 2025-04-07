@@ -56,7 +56,7 @@ jobs:
 
       - name: Deploy para o Amplify...
         run: |
-          APP_ID="d2oemzn8l0ony7"
+          APP_ID="d3hm9j0fxgn5g8"
           BRANCH="main"
           
           JOB_INFO=$(aws amplify start-job --app-id $APP_ID --branch-name $BRANCH --job-type RELEASE)
